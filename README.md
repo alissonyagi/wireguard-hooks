@@ -3,6 +3,8 @@ Linux hooks for using multiple Wireguard clients (or even a single one) without 
 
 Sometimes you need to accept incoming internet connections over your default route (ISP) and also over your wireguard tunnels, keeping the defaul route untouched. That's where this project fits in.
 
+NetNS - net namespace - support added. Simple and effective isolation for services or clients.
+
 **Currently works only over IPv4 (will add IPv6 if someone needs).**
 
 ## Installation
@@ -48,10 +50,46 @@ systemctl start wg-quick@wg0
 > ```bash
 > curl --interface wg0 https://api.ipify.org
 > ```
-> And now check you main (ISP) route:
+> And now check you main (ISP) public IP to compare:
 > ```bash
 > curl https://api.ipify.org
 > ```
+
+## NetNS usage - network namespaces
+Network namespace is a powerful feature of iproute2, providing isolation of network traffic.
+
+Some clients do not support binding to specific interfaces. And this is where **netns** comes in.
+
+This script auto creates a namespace to make it easy to connect anything over the specific tunnel.
+
+Just run like this:
+```
+ip netns exec ns-<interface> <cmd>
+```
+
+Example 1 - get your public IP without specifying interface (like the examples in previous topic):
+```bash
+ip netns exec ns-wg0 curl https://api.ipify.org
+```
+
+Example 2 - run a NodeJS service that connects using your tunnel, without any additional setup.
+```bash
+ip netns exec ns-wg0 node foo_server.sh
+```
+
+> [!TIP]
+> **ip netns** is a root-only command, so you must run as root (not recommended) or using a sudo wrapper like the example below.
+> If you don't know how to do it, you probably shouldn't do it (that's why I'm not commiting the file below).
+```bash
+#!/bin/bash
+# netns-exec.sh: safely run commands inside namespaces
+# make it executable and add it to sudoers
+# then just call it like: <path-to-it>/netns-exec.sh <cmd>
+
+USER_TO_RUN=${SUDO_USER:-$USER}
+IFACE=wg0
+exec sudo ip netns exec ns-wg0 sudo -u "${USER_TO_RUN}" "$@"
+```
 
 ## Troubleshoot
 
