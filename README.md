@@ -78,17 +78,16 @@ ip netns exec ns-wg0 node foo_server.sh
 ```
 
 > [!TIP]
-> **ip netns** is a root-only command, so you must run as root (not recommended) or using a sudo wrapper like the example below.
-> If you don't know how to do it, you probably shouldn't do it (that's why I'm not commiting the file below).
+> **ip netns** is a root-only command, so you must run as root (not recommended) or using a sudo wrapper like the example provided in `netns-exec`.
+> If you don't know how to do it, you probably shouldn't do it.
+>
+> Just make it executable, place it in sudoers and run like this:
 ```bash
-#!/bin/bash
-# netns-exec.sh: safely run commands inside namespaces
-# make it executable and add it to sudoers
-# then just call it like: <path-to-it>/netns-exec.sh <cmd>
-
-USER_TO_RUN=${SUDO_USER:-$USER}
-IFACE=wg0
-exec sudo ip netns exec ns-${IFACE} sudo -u "${USER_TO_RUN}" "$@"
+# Usage:
+# sudo <path>/netns-exec <interface> <cmd>
+#
+# Example:
+sudo netns-exec wg0 curl https://api.ipify.org
 ```
 
 ## Troubleshoot
