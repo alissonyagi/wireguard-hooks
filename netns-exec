@@ -1,0 +1,19 @@
+#!/bin/bash
+# netns-exec: safely run commands inside namespaces
+# make it executable and add it to sudoers
+# then just call it like: <path-to-it>/netns-exec <cmd>
+
+USER_TO_RUN=${SUDO_USER:-$USER}
+IFACE=$1
+
+if [[ ! "${USER_TO_RUN}" =~ ^[a-z_][a-z0-9_-]{0,30}[a-z0-9_]$ ]]; then
+	echo "Invalid user."
+	exit 1
+fi
+
+if [[ ! "${IFACE}" =~ ^[a-z][a-z0-9_.-]{0,10}[a-z0-9]$ ]]; then
+	echo "Invalid interface."
+	exit 1
+fi
+
+exec sudo ip netns exec ns-${IFACE} sudo -u "${USER_TO_RUN}" "${@:2}"
