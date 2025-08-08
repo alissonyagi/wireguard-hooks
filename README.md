@@ -88,7 +88,7 @@ ip netns exec ns-wg0 node foo_server.sh
 
 USER_TO_RUN=${SUDO_USER:-$USER}
 IFACE=wg0
-exec sudo ip netns exec ns-wg0 sudo -u "${USER_TO_RUN}" "$@"
+exec sudo ip netns exec ns-${IFACE} sudo -u "${USER_TO_RUN}" "$@"
 ```
 
 ## Troubleshoot
