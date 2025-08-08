@@ -84,10 +84,10 @@ ip netns exec ns-wg0 node foo_server.sh
 > Just make it executable, place it in sudoers and run like this:
 ```bash
 # Usage:
-# <path>/netns-exec <interface> <cmd>
+# sudo <path>/netns-exec <interface> <cmd>
 #
 # Example:
-netns-exec wg0 curl https://api.ipify.org
+sudo netns-exec wg0 curl https://api.ipify.org
 ```
 
 ## Troubleshoot
