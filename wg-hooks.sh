@@ -4,6 +4,8 @@ OP=$1
 IFACE=$2
 
 RT_FILE="/etc/iproute2/rt_tables"
+LOCK_FILE="/run/wg-hooks.lock"
+TIMEOUT=15
 
 usage() {
 	echo "Usage: $0 <up|down> <interface>"
@@ -44,7 +46,10 @@ find_free_ip() {
 	local range assigned candidate_net candidate_subnet ip1 ip2 conflict subnet iface
 
 	range=10.200
-	readarray -t assigned <<< "$(ip -o -f inet addr show | awk '{print $4, $2}')"
+	readarray -t assigned <<< "$(
+		ip -o -f inet addr show | awk '{print $4, $2}';
+		ip netns list | awk '{print $1}' | xargs -I{} ip netns exec {} ip -o -f inet addr show | awk '{print $4, $2}'
+	)"
 
 	for i in {0..255}; do
 		for j in {0..252..4}; do
@@ -65,7 +70,7 @@ find_free_ip() {
 			done
 
 			if [[ $conflict -eq 0 ]]; then
-				echo $ip1 $ip2 $candidate_subnet
+				echo "$ip1 $ip2 $candidate_subnet"
 				return 0
 			fi
 		done
@@ -95,6 +100,9 @@ if ! iface_exists "${IFACE}"; then
 	echo "Interface does not exist."
 	exit 1
 fi
+
+exec 200>"${LOCK_FILE}"
+flock -x -w ${TIMEOUT} 200 || exit 1
 
 TABLE=$(echo "rt${IFACE}" | tr "[:upper:]" "[:lower:]" | sed "s/[^a-z0-9]//g")
 TABLE_EXISTS=$(awk '$1 ~ /^[0-9]+$/ { print $2 }' "${RT_FILE}" | grep "^${TABLE}$")
@@ -191,7 +199,7 @@ if [ "${OP}" = "down" ]; then
 
 	if [ -z "${IPTABLES_RULES}" ]; then
 		echo "No iptables rules found."
-		exit 1
+		exit 0
 	fi
 
 	eval "${IPTABLES_RULES}"
