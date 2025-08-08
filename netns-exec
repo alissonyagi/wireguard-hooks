@@ -16,4 +16,4 @@ if [[ ! "${IFACE}" =~ ^[a-z][a-z0-9_.-]{0,10}[a-z0-9]$ ]]; then
 	exit 1
 fi
 
-exec sudo ip netns exec ns-${IFACE} sudo -u "${USER_TO_RUN}" "${@:2}"
+/usr/sbin/ip netns exec ns-${IFACE} /usr/bin/sudo -u "${USER_TO_RUN}" "${@:2}"
