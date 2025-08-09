@@ -104,6 +104,8 @@ fi
 exec 200>"${LOCK_FILE}"
 flock -x -w ${TIMEOUT} 200 || exit 1
 
+IP=$(ip -brief addr show wg-hut0 | awk '{print $3}' | cut -d'/' -f1 | grep -v ^$)
+
 TABLE=$(echo "rt${IFACE}" | tr "[:upper:]" "[:lower:]" | sed "s/[^a-z0-9]//g")
 TABLE_EXISTS=$(awk '$1 ~ /^[0-9]+$/ { print $2 }' "${RT_FILE}" | grep "^${TABLE}$")
 
@@ -144,7 +146,7 @@ if [ "${OP}" = "up" ]; then
 
 	iptables -t mangle -A PREROUTING -i ${IFACE} -j CONNMARK --set-mark ${MARK}
 
-	iptables -t mangle -A OUTPUT -o ${IFACE} -j CONNMARK --restore-mark
+	echo "${IP}" | xargs -I{} iptables -t mangle -A OUTPUT -s {} -j CONNMARK --restore-mark
 
 	VETH_CONFIG=$(find_free_ip)
 
@@ -191,10 +193,11 @@ if [ "${OP}" = "up" ]; then
 fi
 
 if [ "${OP}" = "down" ]; then
+	IP_REGEX=$(echo ${IP} | sed "s/ /\|/g")
 	IPTABLES_RULES=$(
-		iptables -S | grep -E " (${IFACE}|${VETH_HOST}) " | sed "s/^-A/iptables -D/";
-		iptables -t nat -S | grep -E " (${IFACE}|${VETH_HOST}) " | sed "s/^-A/iptables -t nat -D/";
-		iptables -t mangle -S | grep -E " (${IFACE}|${VETH_HOST}) " | sed "s/^-A/iptables -t mangle -D/"
+		iptables -S | grep -E " (${IFACE}|${VETH_HOST}|${IP_REGEX}) " | sed "s/^-A/iptables -D/";
+		iptables -t nat -S | grep -E " (${IFACE}|${VETH_HOST}|${IP_REGEX}) " | sed "s/^-A/iptables -t nat -D/";
+		iptables -t mangle -S | grep -E " (${IFACE}|${VETH_HOST}|${IP_REGEX}) " | sed "s/^-A/iptables -t mangle -D/"
 	)
 
 	if [ -z "${IPTABLES_RULES}" ]; then
