@@ -104,7 +104,7 @@ fi
 exec 200>"${LOCK_FILE}"
 flock -x -w ${TIMEOUT} 200 || exit 1
 
-IP=$(ip -brief addr show wg-hut0 | awk '{print $3}' | cut -d'/' -f1 | grep -v ^$)
+IP=$(ip -brief addr show ${IFACE} | awk '{print $3}' | cut -d'/' -f1 | grep -v ^$)
 
 TABLE=$(echo "rt${IFACE}" | tr "[:upper:]" "[:lower:]" | sed "s/[^a-z0-9]//g")
 TABLE_EXISTS=$(awk '$1 ~ /^[0-9]+$/ { print $2 }' "${RT_FILE}" | grep "^${TABLE}$")
