@@ -19,6 +19,10 @@ git clone https://github.com/alissonyagi/wireguard-hooks.git
 chown root wireguard-hooks/wg-hooks.sh
 chmod u+x wireguard-hooks/wg-hooks.sh
 ```
+3. Run `wg-hooks.sh` without arguments to see usage tips:
+```bash
+./wireguard-hooks/wg-hooks.sh
+```
 
 That's all.
 
@@ -30,8 +34,8 @@ In you Wireguard's client config file (eg. `wg0.conf`), make sure to change it a
 [Interface]
 ...
 Table = off
-PostUp = <path-to-script>/wg-hooks.sh up wg0
-PreDown = <path-to-script>/wg-hooks.sh down wg0
+PostUp = <path-to-script>/wg-hooks.sh wg0 dns 8.8.8.8 up
+PreDown = <path-to-script>/wg-hooks.sh wg0 down
 
 [Peer]
 ...
