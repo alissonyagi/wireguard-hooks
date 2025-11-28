@@ -40,9 +40,8 @@ Options:
   dns <addr>	Add DNS server; may be repeated
   up		Interface is going up
   down		Interface is going down
+
 EOF
-	echo "Usage: $0 <interface> [dns <ip>]... <up|down>"
-	echo 
 }
 
 iface_exists() {
