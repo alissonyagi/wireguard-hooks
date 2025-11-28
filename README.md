@@ -114,8 +114,8 @@ sudo netns-exec wg0 curl https://api.ipify.org
   [Interface]
   ...
   #Table = off
-  #PostUp = <path-to-script>/wg-hooks.sh up wg0
-  #PreDown = <path-to-script>/wg-hooks.sh down wg0
+  #PostUp = <path-to-script>/wg-hooks.sh wg0 up
+  #PreDown = <path-to-script>/wg-hooks.sh wg0 down
   ...
   ```
   - Now start only this Wireguard tunnel and check if it works:
