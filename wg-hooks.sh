@@ -244,7 +244,12 @@ if [ "${OP}" = "up" ]; then
 fi
 
 if [ "${OP}" = "down" ]; then
-	IP_REGEX=$(echo ${IP} | sed "s/ /\|/g")
+	IP_LIST=(${IP})
+
+	for ip in "${IP_LIST[@]}"; do
+		IP_REGEX="${IP_REGEX}${ip}/32|"
+	done
+
 	IPTABLES_RULES=$(
 		iptables -S | grep -E " (${IFACE}|${VETH_HOST}|${IP_REGEX}) " | sed "s/^-A/iptables -D/";
 		iptables -t nat -S | grep -E " (${IFACE}|${VETH_HOST}|${IP_REGEX}) " | sed "s/^-A/iptables -t nat -D/";
